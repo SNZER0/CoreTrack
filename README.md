@@ -2,6 +2,9 @@
 
 A sleek and powerful web-based dashboard designed to help you track your learning progress, manage tasks, and stay motivated. This single-page application is built with a minimalist design, using **HTML**, **Tailwind CSS**, and vanilla **JavaScript** to create a fast and responsive user experience without any heavy frameworks.
 
+## 📸 Screenshots
+
+<img width="1889" height="931" alt="image" src="https://github.com/user-attachments/assets/89284c8f-55a3-4ac1-a15c-1164ed970012" />
 ## ✨ Features
 
 - **Progress Tracking**: Easily add courses and track your progress with a dynamic progress bar.
@@ -22,9 +25,6 @@ A sleek and powerful web-based dashboard designed to help you track your learnin
 
 There is no need for a server, build tools, or dependencies.
 
-## 📸 Screenshots
-
-<img width="1889" height="931" alt="image" src="https://github.com/user-attachments/assets/89284c8f-55a3-4ac1-a15c-1164ed970012" />
 
 ## 🛠️ Technology Stack
 
