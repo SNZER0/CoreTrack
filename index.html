@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> CourseTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+     <link rel="icon" type="image/png" href="https://i.pinimg.com/736x/90/4f/ca/904fca15fbaef56442a0d92d88ec5d21.jpg">
+</head>
+<body>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">
+        <svg id="theme-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+        </svg>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
+                My Learning Dashboard
+            </h1>
+            <p class="text-lg mb-4">Goal: Finish everything by December 31, 2025</p>
+            <div id="countdown" class="text-2xl font-semibold mb-6 text-[--accent-500]"></div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="stat-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-[--primary-500]" id="total-courses">0</div>
+                    <div class="text-sm text-[--text-950]">Total Courses</div>
+                </div>
+                <div class="stat-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-[--success-500]" id="completed-courses">0</div>
+                    <div class="text-sm text-[--text-950]">Completed</div>
+                </div>
+                <div class="stat-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-[--accent-500]" id="total-study-time">0h</div>
+                    <div class="text-sm text-[--text-950]">Study Time</div>
+                </div>
+                <div class="stat-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-[--info-500]" id="current-streak">0</div>
+                    <div class="text-sm text-[--text-950]">Day Streak</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="backup-section p-6 rounded-2xl shadow-xl mb-8">
+            <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">🔄 Backup & Restore</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <button onclick="exportData()" class="w-full px-4 py-3 bg-[--primary-500] text-[--background-950] rounded-lg hover:bg-[--accent-500] transition-all duration-200 shadow-md font-medium transform hover:scale-105">
+                        📥 Download Backup
+                    </button>
+                    <p class="text-sm text-[--text-950] mt-2">Save your progress as a JSON file</p>
+                </div>
+                <div>
+                    <div class="file-drop-zone w-full px-4 py-3 bg-[--background-950] rounded-lg cursor-pointer text-center" onclick="document.getElementById('file-input').click()">
+                        <span class="font-medium">📤 Upload Backup</span>
+                        <p class="text-sm text-[--text-950] mt-1">Click or drag JSON file here</p>
+                    </div>
+                    <input type="file" id="file-input" accept=".json" onchange="importData(event)">
+                </div>
+            </div>
+        </div>
+
+        <main id="dashboard-view" class="space-y-8">
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <select id="category-filter" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]">
+                            <option value="">All Categories</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Networking">Networking</option>
+                            <option value="Language">Language</option>
+                            <option value="Math">Math</option>
+                            <option value="Fitness">Fitness</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="sort-by" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]">
+                            <option value="custom">Custom Order</option>
+                            <option value="progress">Progress</option>
+                            <option value="name">Name</option>
+                            <option value="priority">Priority</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-[--text-950]">View:</span>
+                        <button id="grid-view" onclick="setViewMode('grid')" class="p-2 rounded bg-[--primary-500] text-white">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                        </button>
+                        <button id="list-view" onclick="setViewMode('list')" class="p-2 rounded bg-[--background-800] text-[--text-950]">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-xl font-semibold mb-4 text-[--primary-500]">➕ Add New Course</h3>
+                <form id="add-course-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="text" id="new-course-input" placeholder="Course name" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                    <select id="new-course-category" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                        <option value="Other">Other</option>
+                        <option value="Programming">Programming</option>
+                        <option value="Networking">Networking</option>
+                        <option value="Language">Language</option>
+                        <option value="Math">Math</option>
+                        <option value="Fitness">Fitness</option>
+                    </select>
+                    <select id="new-course-priority" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-[--primary-500] text-[--background-950] rounded-lg hover:bg-[--secondary-500] transition-all duration-200 shadow-md transform hover:scale-105">Add Course</button>
+                </form>
+            </div>
+            
+            <div id="achievements-section" class="glass-effect p-6 rounded-2xl shadow-xl"></div>
+            
+            <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </main>
+
+        <section id="details-view" class="hidden space-y-8">
+            <div class="flex justify-between items-center">
+                <button onclick="showDashboard()" class="px-4 py-2 bg-[--background-900] text-[--text-950] rounded-lg hover:bg-[--secondary-500] transition-colors duration-200 shadow-md">
+                    &larr; Back to Dashboard
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div id="study-timer" class="timer-display">
+                        <span id="timer-display">00:00:00</span>
+                        <button id="timer-btn" onclick="toggleTimer()" class="ml-2 px-3 py-1 bg-white text-[--success-500] rounded text-sm">Start</button>
+                    </div>
+                </div>
+            </div>
+            
+            <h2 id="details-title" class="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent"></h2>
+            
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">⚙️ Course Settings</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-[--text-950] mb-2">Category</label>
+                        <select id="course-category" class="w-full px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]" onchange="updateCourseSettings()">
+                            <option value="Other">Other</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Networking">Networking</option>
+                            <option value="Language">Language</option>
+                            <option value="Math">Math</option>
+                            <option value="Fitness">Fitness</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[--text-950] mb-2">Priority</label>
+                        <select id="course-priority" class="w-full px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]" onchange="updateCourseSettings()">
+                            <option value="low">Low Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[--text-950] mb-2">Study Time Goal (hours/week)</label>
+                        <input type="number" id="study-goal" min="0" max="168" step="0.5" class="w-full px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]" onchange="updateCourseSettings()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">📊 Progress Counter</h3>
+                <div class="mb-6">
+                    <div class="progress-bar">
+                        <div id="details-progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div id="details-progress-text" class="text-sm text-[--text-950] mt-2">0% complete</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="total-items-input" class="block text-sm font-medium text-[--text-950] mb-2">Total Items (e.g., videos, chapters)</label>
+                        <input type="number" id="total-items-input" class="w-full px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md" min="0" onchange="updateItemProgress()">
+                    </div>
+                    <div>
+                        <label for="completed-items-input" class="block text-sm font-medium text-[--text-950] mb-2">Completed Items</label>
+                        <input type="number" id="completed-items-input" class="w-full px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md" min="0" onchange="updateItemProgress()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">🔗 Course Website</h3>
+                <form id="link-form" class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="link-name-input" placeholder="Website Name (e.g. Coursera)" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                    <input type="url" id="link-url-input" placeholder="Website URL" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                    <button type="submit" class="px-4 py-2 bg-[--primary-500] text-[--background-950] rounded-lg hover:bg-[--secondary-500] transition-all duration-200 shadow-md transform hover:scale-105">Save Link</button>
+                </form>
+                <div id="link-display"></div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">📝 Course Notes</h3>
+                <textarea id="course-notes" placeholder="Add your notes, thoughts, or important points about this course..." 
+                          class="notes-textarea w-full h-32 p-4 resize-none focus:outline-none" 
+                          onchange="updateCourseNotes()"></textarea>
+                <div class="text-xs text-[--text-950] mt-2 opacity-70">Notes are automatically saved as you type</div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">✅ To-Do List</h3>
+                <form id="todo-form" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-2">
+                    <input type="text" id="todo-input" placeholder="Add a new task" class="md:col-span-2 px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                    <select id="todo-priority" class="px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500] shadow-md">
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-[--primary-500] text-[--background-950] rounded-lg hover:bg-[--secondary-500] transition-all duration-200 shadow-md transform hover:scale-105">Add Task</button>
+                </form>
+                <div id="todo-list" class="space-y-3"></div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-xl">
+                <h3 class="text-2xl font-semibold mb-4 text-[--primary-500]">📈 Progress Analytics</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <canvas id="progress-chart" width="400" height="200"></canvas>
+                    </div>
+                    <div>
+                        <canvas id="study-time-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="floating-action" onclick="showQuickAdd()" title="Quick Add Task">
+        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+    </div>
+
+    <div id="message-box" class="fixed bottom-4 right-4 bg-[--background-900] text-[--text-950] px-4 py-2 rounded-lg shadow-xl hidden z-50 transition-all duration-300 transform translate-x-full">
+        <p id="message-text"></p>
+    </div>
+
+    <div id="quick-add-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="glass-effect p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-[--primary-500]">Quick Add Task</h3>
+            <form id="quick-add-form">
+                <select id="quick-course-select" class="w-full mb-3 px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]">
+                </select>
+                <input type="text" id="quick-task-input" placeholder="Task description" class="w-full mb-3 px-4 py-2 rounded-lg bg-[--background-950] text-[--text-950] focus:outline-none focus:ring-2 focus:ring-[--accent-500]">
+                <div class="flex space-x-2">
+                    <button type="submit" class="flex-1 px-4 py-2 bg-[--primary-500] text-white rounded-lg hover:bg-[--accent-500] transition-colors">Add</button>
+                    <button type="button" onclick="hideQuickAdd()" class="flex-1 px-4 py-2 bg-[--background-800] text-[--text-950] rounded-lg hover:bg-[--secondary-500] transition-colors">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="mt-16 py-8 border-t border-[--border-color]">
+        <div class="max-w-7xl mx-auto px-4 md:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="text-center md:text-left">
+                    <p class="text-[--text-950] font-medium">Created by Sazzy</p>
+                    <p class="text-sm text-[--text-950] opacity-70">Enhanced Course Progress Tracker</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="https://instagram.com/naimsazzad" target="_blank" rel="noopener noreferrer" 
+                       class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>@naimsazzad</span>
+                    </a>
+                    <div class="text-sm text-[--text-950] opacity-50">
+                        v2.0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JS code will be inserted here
+    </script>
+</body>
+</html>
